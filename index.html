@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chain Rule Derivative Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.js"></script>
+  <style>
+    body { 
+      margin: 0;
+      padding: 0;
+   
+    }
+
+    header {
+      background-color: darkblue;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    #main {
+      margin: 50px ;
+      max-width: 700px;
+      padding: 30px;
+      border-radius: 10px;
+      border: 1px black solid;
+    }
+
+    input { 
+        width: 300px; padding: 5px; 
+    }
+    button { padding: 5px; margin-left: 10px; background-color: red; border-radius: 4px; border: black 2px solid; color: white;}
+    p { margin-top: 10px; font-weight: bold; }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+    }
+
+    footer h4 {
+      margin: 5px 0;
+      font-weight: normal;
+    }
+
+    .team {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .member {
+      background: rgba(255,255,255,0.1);
+      padding: 8px 12px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Multivariate Calculus Project</h1>
+    <h2>Chain Rule</h2>
+    <h3>Instructor: Teacher ka naam here</h3>
+  </header>
+
+  <div id="main">
+    <h2>Simple Chain Rule Calculator</h2>
+    <input type="text" id="equation" placeholder="Enter function (e.g., sin(x^2) or e^(3x+1))">
+    <button onclick="calculate()">Find Derivative</button>
+    <div id="result"></div>
+  </div>
+
+  <footer>
+    <h4>Team Members</h4>
+    <div class="team">
+      <div class="member">Hibah Zehra(EB25210106034)</div>
+      <div class="member">Hibah Zehra(EB25210106034)</div>
+      <div class="member">Hibah Zehra(EB25210106034)</div>
+      <div class="member">Hibah Zehra(EB25210106034)</div>
+    </div>
+  </footer>
+
+  <script>
+    // Check if the equation likely uses the chain rule
+    function isChainRule(equation) {
+      const functions = ["sin", "cos", "tan", "log", "exp", "e^"];
+      for (let i = 0; i < functions.length; i++) {
+        if (equation.includes(functions[i] + "(")) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function extractFunctions(equation) {
+      const functions = ["sin", "cos", "tan", "log", "exp", "e^"];
+      for (let i = 0; i < functions.length; i++) {
+        const func = functions[i];
+        const pattern = new RegExp(func + "\\((.*)\\)");
+        const match = equation.match(pattern);
+        if (match) {
+          let outer = func;
+          if (func === "e^") {
+            outer = "exp";
+          }
+          let inner = match[1];
+          return { outer, inner };
+        }
+      }
+      return null;
+    }
+
+    function getDerivative(eq, variable) {
+      try {
+        return math.derivative(eq, variable).toString();
+      } catch {
+        return "Invalid equation!";
+      }
+    }
+
+    function calculate() {
+      const eq = document.getElementById("equation").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (isChainRule(eq)) {
+        const parts = extractFunctions(eq);
+        if (!parts) {
+          resultDiv.innerHTML = "<p>Error!</p>";
+          return;
+        }
+
+        const { outer, inner } = parts;
+        const outerDerivative = getDerivative(`${outer}(u)`, "u");
+        const innerDerivative = getDerivative(inner, "x");
+
+const substituted = outerDerivative.replaceAll("u", `(${inner})`);
+        const finalDerivative = getDerivative(eq, "x");
+
+        resultDiv.innerHTML = `
+          <p>Original Function: f(g(x)) = ${eq}</p>
+          <p>f(u) = ${outer}(u)</p>
+          <p>g(x) = ${inner}</p>
+          <p>Derivative of function f → f'(u) = ${outerDerivative}</p>
+          <p>Derivative of function g → g'(x) = ${innerDerivative}</p>
+          <p>Applying Chain Rule:</p>
+          <p>d/dx [f(g(x))] = f'(g(x)) × g'(x)</p>
+          <p>= (${substituted}) × (${innerDerivative})</p>
+          <p><b>Final Derivative:</b> ${finalDerivative}</p>
+        `;
+      } else {
+        const result = getDerivative(eq, "x");
+        resultDiv.innerHTML = `<p>No chain rule needed.</p><p>Derivative: ${result}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
