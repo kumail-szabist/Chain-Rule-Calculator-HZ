@@ -64,7 +64,7 @@
   <header>
     <h1>Multivariate Calculus Project</h1>
     <h2>Chain Rule</h2>
-    <h3>Instructor: Teacher ka naam here</h3>
+    <h3>Instructor: Dr Najeeb Alam Khan</h3>
   </header>
 
   <div id="main">
@@ -77,71 +77,92 @@
   <footer>
     <h4>Team Members</h4>
     <div class="team">
-      <div class="member">Hibah Zehra(EB25210106034)</div>
-      <div class="member">Hibah Zehra(EB25210106034)</div>
-      <div class="member">Hibah Zehra(EB25210106034)</div>
-      <div class="member">Hibah Zehra(EB25210106034)</div>
+      <div class="member">Hibah Zehra (EB25210106034)</div>
+      <div class="member">Shiza Jamal (EB25210106114)</div>
+      <div class="member">Gul e Maheen (EB25210106029)</div>
+      <div class="member">Laveeza Khan (EB25210106041)</div>
     </div>
   </footer>
 
   <script>
-    // Check if the equation likely uses the chain rule
-    function isChainRule(equation) {
+
+
+function calculate() {
+    const eq = document.getElementById("equation").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+      let typee=chainRuleType(eq);
+      if(typee=="tri"){
+calculateTriFunction(eq)
+      }else if(typee=="exp"){
+calculateExpFunction(eq);
+      }else{
+              resultDiv.innerHTML = `Can not use chain rule!`;
+
+      }
+
+    
+}
+    function chainRuleType(equation) {
       const functions = ["sin", "cos", "tan", "log", "exp", "e^"];
+        const reExpr = /\(\s*([^)]+?)\s*\)\s*\^\s*(\d+)/;
       for (let i = 0; i < functions.length; i++) {
         if (equation.includes(functions[i] + "(")) {
-          return true;
+            console.log("Solving by Tri Fun");
+            return "tri";
         }
       }
+       if (reExpr.test(equation)) {
+                    console.log("Solving by Exp Fun");
+                    return "exp";
+  }
       return false;
     }
 
-    function extractFunctions(equation) {
-      const functions = ["sin", "cos", "tan", "log", "exp", "e^"];
-      for (let i = 0; i < functions.length; i++) {
-        const func = functions[i];
-        const pattern = new RegExp(func + "\\((.*)\\)");
-        const match = equation.match(pattern);
-        if (match) {
-          let outer = func;
-          if (func === "e^") {
-            outer = "exp";
-          }
-          let inner = match[1];
-          return { outer, inner };
-        }
+    function extractTriFunctions(equation) {
+  const functions = ["sin", "cos", "tan", "log", "exp", "e^"];
+    for (let i = 0; i < functions.length; i++) {
+    const func = functions[i];
+    const pattern = new RegExp(func + "\\((.*)\\)");
+    const match = equation.match(pattern);
+    console.log(match)
+    if (match) {
+      let outer = func;
+      if (func === "e^") {
+        outer = "exp";
       }
-      return null;
+      let inner = match[1];
+      return { outer, inner };
     }
+  }
+  
+
+}
+
 
     function getDerivative(eq, variable) {
       try {
         return math.derivative(eq, variable).toString();
       } catch {
+        document.getElementById("result").innerHTML="<p>Can not be done by chain rule!</p>"
         return "Invalid equation!";
       }
     }
 
-    function calculate() {
-      const eq = document.getElementById("equation").value.trim();
-      const resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "";
-
-      if (isChainRule(eq)) {
-        const parts = extractFunctions(eq);
+    function calculateTriFunction(eq) {
+      
+        const parts = extractTriFunctions(eq);
         if (!parts) {
-          resultDiv.innerHTML = "<p>Error!</p>";
+          document.getElementById("result").innerHTML = "<p>Error!</p>";
           return;
         }
-
         const { outer, inner } = parts;
         const outerDerivative = getDerivative(`${outer}(u)`, "u");
         const innerDerivative = getDerivative(inner, "x");
-
-const substituted = outerDerivative.replaceAll("u", `(${inner})`);
+        const substituted = outerDerivative.replaceAll("u", `(${inner})`);
         const finalDerivative = getDerivative(eq, "x");
 
-        resultDiv.innerHTML = `
+        document.getElementById("result").innerHTML = `
           <p>Original Function: f(g(x)) = ${eq}</p>
           <p>f(u) = ${outer}(u)</p>
           <p>g(x) = ${inner}</p>
@@ -152,10 +173,48 @@ const substituted = outerDerivative.replaceAll("u", `(${inner})`);
           <p>= (${substituted}) × (${innerDerivative})</p>
           <p><b>Final Derivative:</b> ${finalDerivative}</p>
         `;
-      } else {
-        const result = getDerivative(eq, "x");
-        resultDiv.innerHTML = `<p>No chain rule needed.</p><p>Derivative: ${result}</p>`;
-      }
+     
+    }
+
+
+    function extractExpFunction(equation) {
+        const powerPattern = /\(\s*([^)]+?)\s*\)\s*\^\s*(\d+)/;
+  const powerMatch = equation.match(powerPattern);
+  if (powerMatch) {
+    const inner = powerMatch[1]; 
+    const n = powerMatch[2];     
+    const outer = `u^${n}`;      
+    return { outer, inner };
+  }
+    }
+        function calculateExpFunction(equation) {
+          const eq = document.getElementById("equation").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+        const parts = extractExpFunction(eq);
+        if (!parts) {
+          resultDiv.innerHTML = "<p>Error!</p>";
+          return;
+        }
+        const { outer, inner } = parts;
+        console.log(parts)
+        const outerDerivative = getDerivative(`${outer}`, "u");
+        const innerDerivative = getDerivative(inner, "x");
+        const substituted = outerDerivative.replaceAll("u", `(${inner})`);
+        const finalDerivative = getDerivative(eq, "x");
+
+        resultDiv.innerHTML = `
+          <p>Original Function: f(g(x)) = ${eq}</p>
+          <p>f(u) = ${outer}</p>
+          <p>g(x) = ${inner}</p>
+          <p>Derivative of function f → f'(u) = ${outerDerivative}</p>
+          <p>Derivative of function g → g'(x) = ${innerDerivative}</p>
+          <p>Applying Chain Rule:</p>
+          <p>d/dx [f(g(x))] = f'(g(x)) × g'(x)</p>
+          <p>= (${substituted}) × (${innerDerivative})</p>
+          <p><b>Final Derivative:</b> ${finalDerivative}</p>
+        `;
+     
     }
   </script>
 </body>
